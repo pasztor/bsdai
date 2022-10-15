@@ -1,0 +1,85 @@
+#
+# Copyright 2022 PASZTOR Gyorgy
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+#
+# $FreeBSD$
+#
+
+# PROVIDE: setup_on_firstboot
+# REQUIRE: NETWORKING
+# KEYWORD: firstboot
+
+. /etc/rc.subr
+
+name="setup_on_firstboot"
+desc="Do some basic setup on first boot"
+start_cmd="do_setup_on_first_boot"
+stop_cmd=":"
+rcvar="setup_on_first_boot_enabled"
+
+get_dhcp_option () {
+	local _full
+	local _option
+	_option="$1"
+	_full="`grep "$_option" /var/db/dhclient.leases.* | tail -1 `"
+	_full="${_full##*$_option }"
+	_full="${_full%;}"
+	_full="${_full#\"}"
+	_full="${_full%\"}"
+	local IFS=','
+	for i in $_full
+	do
+		echo "$i"
+	done
+}
+
+do_setup_on_first_boot () {
+	#1 make a permanent hostname
+	hostname="`sysrc -n hostname`"
+	if [ -z "$hostname" ]; then
+		hostname="`get_dhcp_option host-name`"
+		[ -n "$hostname" ] && sysrc hostname="$hostname"
+	fi
+	#2 get dynamic postconfig file
+	configuri="`get_dhcp_option extensions-path`"
+	interface="`get_dhcp_option interface`"
+	mac="`ifconfig $interface | grep ether`"
+	mac="${mac##*ether }"
+	ip="`get_dhcp_option fixed-address`"
+	if [ -n "$configuri" ]; then
+		setupfile=`mktemp`
+		fetch -o $setupfile "$configuri?mac=$mac&host=$hostname&ip=$ip"
+		chmod 555 $setupfile
+		$setupfile
+		# If there was no error, than clean up after ourselves
+		if [ $? -eq 0 ]; then
+			sysrc -x setup_on_first_boot_enabled
+			rm /tmp/installscript
+			rm $setupfile
+		fi
+	fi
+}
+
+load_rc_config $name
+run_rc_command "$1"

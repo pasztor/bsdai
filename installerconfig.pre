@@ -1,0 +1,15 @@
+DISTRIBUTIONS="@DISTRIBUTIONS@"
+export nonInteractive="YES"
+
+#!/bin/sh
+
+sysrc ifconfig_DEFAULT=DHCP
+sysrc sshd_enable=YES
+sysrc setup_on_first_boot_enabled=YES
+touch /firstboot
+echo "security.bsd.allow_destructive_dtrace=0" >>/boot/loader.conf
+rootdev=`kenv custom.rootdev 2>/dev/null`
+[ -n "$rootdev" ] && printf 'vfs.root.mountfrom="%s"\n' "$rootdev" >>/boot/loader.conf
+
+printf '#!%s\n' '/bin/sh' >/etc/rc.d/setup_on_firstboot
+cat <<'END' >>/etc/rc.d/setup_on_firstboot

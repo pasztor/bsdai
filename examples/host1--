@@ -1,0 +1,12 @@
+#!/bin/sh
+
+env ASSUME_ALWAYS_YES=yes pkg install sudo bash
+printf 'pasztor::::::PASZTOR Gyorgy::/usr/local/bin/bash:\n' | adduser -f - -w no
+pw usermod -G wheel -n pasztor
+mkdir /root/.ssh
+mkdir /home/pasztor/.ssh
+fetch -o /root/.ssh/authorized_keys https://github.com/pasztor.keys
+cp /root/.ssh/authorized_keys /home/pasztor/.ssh
+chown -R pasztor:pasztor /home/pasztor/.ssh
+printf 'pasztor ALL=(ALL) NOPASSWD: ALL\n' >/usr/local/etc/sudoers.d/pasztor
+printf '/PermitRoot\na\nPermitRootLogin prohibit-password\n.\nw\n' | ed /etc/ssh/sshd_config 

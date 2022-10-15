@@ -1,0 +1,4 @@
+END
+chmod 555 /etc/rc.d/setup_on_firstboot
+sync
+reboot
