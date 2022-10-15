@@ -1,0 +1,2 @@
+# bsdai
+FreeBSD Automatic Installer
