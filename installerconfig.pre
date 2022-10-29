@@ -7,7 +7,26 @@ sysrc ifconfig_DEFAULT=DHCP
 sysrc sshd_enable=YES
 sysrc setup_on_first_boot_enabled=YES
 touch /firstboot
+# Hardening starts here
 echo "security.bsd.allow_destructive_dtrace=0" >>/boot/loader.conf
+sysrc clear_tmp_enable="YES"
+sysrc syslogd_flags="-ss"
+sysrc sendmail_enable="NONE"
+cat <<END >>/etc/sysrc.conf
+security.bsd.see_other_uids=0
+security.bsd.see_other_gids=0
+security.bsd.see_jail_proc=0
+security.bsd.unprivileged_read_msgbuf=0
+security.bsd.unprivileged_proc_debug=0
+kern.randompid=1
+kern.elf32.aslr.enable=1
+kern.elf32.aslr.pie_enable=1
+kern.elf32.aslr.honor_sbrk=0
+kern.elf64.aslr.enable=1
+kern.elf64.aslr.pie_enable=1
+kern.elf64.aslr.honor_sbrk=0
+END
+# Hardeding ends here
 rootdev=`kenv custom.rootdev 2>/dev/null`
 [ -n "$rootdev" ] && printf 'vfs.root.mountfrom="%s"\n' "$rootdev" >>/boot/loader.conf
 
