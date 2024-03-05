@@ -12,7 +12,7 @@ echo "security.bsd.allow_destructive_dtrace=0" >>/boot/loader.conf
 sysrc clear_tmp_enable="YES"
 sysrc syslogd_flags="-ss"
 sysrc sendmail_enable="NONE"
-cat <<END >>/etc/sysrc.conf
+cat <<END >>/etc/sysctl.conf
 security.bsd.see_other_uids=0
 security.bsd.see_other_gids=0
 security.bsd.see_jail_proc=0
