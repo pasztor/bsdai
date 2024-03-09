@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env -S -P ${PATH}:/usr/local/bin python
 #
 # Copyright 2022 PASZTOR Gyorgy
 # All rights reserved.

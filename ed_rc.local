@@ -1,9 +1,0 @@
-/read TERM
-s/^/#/
-/bsdinstall script
-i
-	PARTITIONS="`kenv custom.partitions | tr _ \  `"
-	[ -z "$PARTITIONS" ] && PARTITIONS=DEFAULT
-	export PARTITIONS
-.
-w

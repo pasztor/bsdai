@@ -69,7 +69,13 @@ do_setup_on_first_boot () {
 	ip="`get_dhcp_option fixed-address`"
 	if [ -n "$configuri" ]; then
 		setupfile=`mktemp`
-		fetch -o $setupfile "$configuri?mac=$mac&host=$hostname&ip=$ip"
+		maxattempts=5
+		while [ $maxattempts -gt 0 ] ; do
+			maxattempts=$((maxattempts-1))
+			fetch -o $setupfile "$configuri?mac=$mac&host=$hostname&ip=$ip" && break
+			printf 'Failed to fetch setupfile, there is still %d attempt.\n' "$maxattempts"
+			sleep 2
+		done
 		chmod 555 $setupfile
 		$setupfile
 		# If there was no error, than clean up after ourselves

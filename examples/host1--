@@ -1,5 +1,6 @@
 #!/bin/sh
 
+env ASSUME_ALWAYS_YES=yes pkg bootstrap -f
 env ASSUME_ALWAYS_YES=yes pkg install sudo bash
 printf 'pasztor::::::PASZTOR Gyorgy::/usr/local/bin/bash:\n' | adduser -f - -w no
 pw usermod -G wheel -n pasztor
